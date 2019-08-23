@@ -40,8 +40,6 @@ parser.add_argument('--model', type=str, default='resnet50', help='Model: resnet
 parser.add_argument('--rampup_length', type=int, default=1, help='Ramp up length')
 parser.add_argument('--source_rampup_length', type=int, default=1, help='Source Ramp up length')
 parser.add_argument('--random_seed', type=int, default=0, help='Random seed value')
-parser.add_argument('--method', type=str, default='add', choices=['pi', 'add'], help='Fuck You')
-parser.add_argument('--src_method', type=str, default='pi', choices=['pi', 'add'], help='Fuck You, Too')
 parser.add_argument('--target_consistency_loss', type=str, default='l1', choices=['l1', 'l2', 'kld'],
                     help='Target Consistency Loss')
 parser.add_argument('--source_consistency_loss', type=str, default='l2', choices=['l1', 'l2', 'kld'],
@@ -72,11 +70,6 @@ parser.add_argument('--cnn_delta', type=float, default=0.01, help='cnn delta')
 parser.add_argument('--fc_delta', type=float, default=0.1, help='fc delta')
 parser.add_argument('--source_delta', type=float, default=0.1, help='Delta value for source')
 parser.add_argument('--source_delta_fc', type=float, default=0.1, help='Delta value for source, fc layer')
-
-#########################
-# Class Balance
-#########################
-parser.add_argument('--use_cls_balance', type=bool, default=False, help='Use class balance loss')
 
 #########################
 # Layer Ablation settings

@@ -2,124 +2,7 @@
 def set_template(args):
     print("Template Setting: {}".format(args.template))
 
-    if args.template == 'small_fc_drop':
-        args.device_idx = '0,1'
-        # args.device_idx = '2,3'
-        args.train_mode = 'fc_add'
-        args.batch_size = 128
-        args.lr = 0.001
-        args.epoch = 100
-        args.optimizer = 'Adam'
-        args.momentum = 0.9
-        args.decay_step = 30
-        args.gamma = 0.1
-        args.weight_decay = 5e-4
-        args.experiment_dir = 'small_experiments'
-        args.validation_period_as_iter = None
-        args.log_period_as_iter = 5000
-        args.source_dataset_code = 'svhn'
-        args.target_dataset_code = 'mnist'
-        args.transform_type = 'no_hflip'
-        args.entmin_weight = 0.01
-        args.delta = 0.2
-        args.target_consistency_weight = 2
-        args.source_consistency_weight = 1
-        args.rampup_length = 60
-        args.random_seed = 1
-        args.method = 'add'
-        args.src_method = 'pi'
-        args.target_consistency_loss = 'kld'
-        args.source_consistency_loss = 'l2'
-        args.model = 'rgb32'
-        args.source_delta = 0.1
-        args.use_vat = False
-        args.eps = 3.5
-        args.target_vat_loss_weight = 0.1
-        args.use_cls_balance = True
-        args.experiment_description = 'stlcifar_fcadd_targcons2_r60_d0.2'
-
-    elif args.template == 'cnn_drop_rndSeed':
-        args.device_idx = '0,1'
-        # args.device_idx = '2,3'
-        # args.device_idx = '4,5'
-        # args.device_idx = '6,7'
-        args.train_mode = 'cnn_add'
-        args.batch_size = 128
-        args.lr = 0.001
-        args.epoch = 100
-        args.optimizer = 'Adam'
-        args.momentum = 0.9
-        args.decay_step = 30
-        args.gamma = 0.1
-        args.weight_decay = 5e-5
-        args.experiment_dir = 'small_experiments'
-        args.log_period_as_iter = 10000
-        args.validation_period_as_iter = None
-        args.source_dataset_code = 'cifar9'
-        args.target_dataset_code = 'stl9'
-        args.transform_type = 'standard'
-        args.entmin_weight = 0.01
-        args.delta = 0.05
-        args.target_consistency_weight = 2
-        args.source_consistency_weight = 1
-        args.rampup_length = 80
-        args.random_seed = -1
-        args.method = 'add'
-        args.src_method = 'add'
-        args.target_consistency_loss = 'kld'
-        args.source_consistency_loss = 'kld'
-        args.model = 'rgb32'
-        args.source_delta = 0.01
-        args.use_vat = False
-        args.eps = 3.5
-        args.target_vat_loss_weight = 0.0
-        args.use_cls_balance = True
-        args.experiment_description = 'cifarstl_rndSeed'
-
-    elif args.template == 'small_joint_drop':
-        # args.device_idx = '0,1'
-        # args.device_idx = '2,3'
-        # args.device_idx = '4,5'
-        args.device_idx = '6,7'
-        args.train_mode = 'dta'
-        args.batch_size = 128
-        args.lr = 0.001
-        args.epoch = 30
-        args.optimizer = 'Adam'
-        args.momentum = 0.9
-        args.decay_step = 10
-        args.gamma = 0.1
-        args.weight_decay = 5e-4
-        args.experiment_dir = 'small_experiments'
-        args.validation_period_as_iter = None
-        args.log_period_as_iter = 5000
-        args.source_dataset_code = 'usps'
-        args.target_dataset_code = 'mnist'
-        args.transform_type = 'no_hflip'
-        args.entmin_weight = 0.01
-        args.source_delta = 0.05
-        args.fc_delta = 0.1
-        args.cnn_delta = 0.05
-        args.target_fc_consistency_weight = 2
-        args.target_cnn_consistency_weight = 0
-        args.source_fc_consistency_weight = 1
-        args.source_cnn_consistency_weight = 0
-        args.rampup_length = 80
-        args.random_seed = 1
-        args.method = 'add'
-        args.src_method = 'add'
-        args.target_consistency_loss = 'kld'
-        args.source_consistency_loss = 'kld'
-        args.model = 'rgb32'
-        args.source_delta_fc = 0.1
-        args.source_delta = 0.01
-        args.use_vat = False
-        args.eps = 3.5
-        args.target_vat_loss_weight = 0.1
-        args.use_cls_balance = True
-        args.experiment_description = 'joint_fccons2_cnncons0_noVAT'
-
-    elif args.template == 'fc_drop':
+    if args.template == 'fc_drop':
         args.device_idx = '0,1,2,3'
         # args.device_idx = '4,5,6,7'
         args.train_mode = 'fc_add'
@@ -142,8 +25,6 @@ def set_template(args):
         args.source_consistency_weight = 1
         args.rampup_length = 20
         args.random_seed = 1
-        args.method = 'add'
-        args.src_method = 'pi'
         args.target_consistency_loss = 'kld'
         args.source_consistency_loss = 'l2'
         args.model = 'resnet50'
@@ -151,7 +32,6 @@ def set_template(args):
         args.use_vat = True
         args.eps = 15
         args.target_vat_loss_weight = 0.1
-        args.use_cls_balance = True
         args.experiment_description = 'res50_fcadd_VAT_0.1_entmin0.02'
 
     elif args.template == 'cnn_drop':
@@ -177,8 +57,6 @@ def set_template(args):
         args.source_consistency_weight = 1
         args.rampup_length = 30
         args.random_seed = 12345
-        args.method = 'add'
-        args.src_method = 'add'
         args.target_consistency_loss = 'kld'
         args.source_consistency_loss = 'kld'
         args.model = 'resnet101'
@@ -186,7 +64,6 @@ def set_template(args):
         args.use_vat = True
         args.eps = 15
         args.target_vat_loss_weight = 0.1
-        args.use_cls_balance = True
         args.experiment_description = 'res101_convadd_best_reproduce'
 
     elif args.template == 'cnn_drop_source_only':
@@ -212,8 +89,6 @@ def set_template(args):
         args.source_consistency_weight = 0
         args.rampup_length = 30
         args.random_seed = 12345
-        args.method = 'pi'
-        args.src_method = 'pi'
         args.target_consistency_loss = 'kld'
         args.source_consistency_loss = 'kld'
         args.model = 'resnet101'
@@ -221,7 +96,6 @@ def set_template(args):
         args.use_vat = False
         args.eps = 15
         args.target_vat_loss_weight = 0
-        args.use_cls_balance = False
         args.experiment_description = 'res101_source_only'
 
     elif args.template == 'joint_cnn_fc_drop':
@@ -247,8 +121,6 @@ def set_template(args):
         args.source_consistency_weight = 1
         args.rampup_length = 50
         args.random_seed = 12345
-        args.method = 'add'
-        args.src_method = 'add'
         args.target_consistency_loss = 'kld'
         args.source_consistency_loss = 'kld'
         args.model = 'resnet101'
@@ -256,7 +128,6 @@ def set_template(args):
         args.use_vat = False
         args.eps = 15
         args.target_vat_loss_weight = 0.1
-        args.use_cls_balance = True
         args.experiment_description = 'joint_novat_targcons2_r50'
 
     elif args.template == 'joint_cnn_fc_drop_VAT':
@@ -282,8 +153,6 @@ def set_template(args):
         args.source_consistency_weight = 1
         args.rampup_length = 30
         args.random_seed = 12345
-        args.method = 'add'
-        args.src_method = 'add'
         args.target_consistency_loss = 'kld'
         args.source_consistency_loss = 'kld'
         args.model = 'resnet101'
@@ -291,7 +160,6 @@ def set_template(args):
         args.use_vat = True
         args.eps = 15
         args.target_vat_loss_weight = 0.1
-        args.use_cls_balance = True
         args.experiment_description = 'joint_vat_targcons2'
 
     elif args.template == 'res50_rnd_seed':
@@ -317,8 +185,6 @@ def set_template(args):
         args.source_consistency_weight = 1
         args.rampup_length = 20
         args.random_seed = -1
-        args.method = 'add'
-        args.src_method = 'pi'
         args.target_consistency_loss = 'kld'
         args.source_consistency_loss = 'l2'
         args.model = 'resnet50'
@@ -326,7 +192,6 @@ def set_template(args):
         args.use_vat = True
         args.eps = 15
         args.target_vat_loss_weight = 0.2
-        args.use_cls_balance = True
         args.experiment_description = 'res50_best_randomseed'
 
     elif args.template == 'source_only':
@@ -367,8 +232,6 @@ def set_template(args):
         args.rampup_length = 20
         args.source_rampup_length = 1
         args.random_seed = 12345
-        args.method = "add"
-        args.src_method = "pi"
         args.target_consistency_loss = "kld"
         args.source_consistency_loss = "l2"
         args.train_mode = "dta"
@@ -378,7 +241,6 @@ def set_template(args):
         args.delta = 0.01
         args.source_delta = 0.0025
         args.source_delta_fc = 0.1
-        args.use_cls_balance = True
         args.use_vat = True
         args.eps = 15
         args.source_vat_loss_weight = 0.0
@@ -403,8 +265,6 @@ def set_template(args):
         args.rampup_length = 20
         args.source_rampup_length = 1
         args.random_seed = 12345
-        args.method = "add"
-        args.src_method = "pi"
         args.target_consistency_loss = "kld"
         args.source_consistency_loss = "l2"
         args.train_mode = "dta"
@@ -414,7 +274,6 @@ def set_template(args):
         args.delta = 0.01
         args.source_delta = 0.0025
         args.source_delta_fc = 0.1
-        args.use_cls_balance = True
         args.use_vat = False
         args.eps = 15
         args.source_vat_loss_weight = 0.0
@@ -438,9 +297,6 @@ def set_template(args):
         args.transform_type = 'visda_standard'
         args.batch_size = 64
 
-        args.method = 'add'
-        args.src_method = 'add'
-
         args.source_dataset_code = 'visda_source'
         args.target_dataset_code = 'visda_target'
 
@@ -459,7 +315,6 @@ def set_template(args):
         args.entmin_weight = 0.02
         args.target_vat_loss_weight = 0.2
 
-        args.use_cls_balance = True
         args.use_vat = True
 
     else:

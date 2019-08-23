@@ -40,7 +40,6 @@ class JointCnnFcTrainerSplit(object):
         self.source_fc_consistency_weight = args.source_fc_consistency_weight
         self.source_cnn_consistency_weight = args.source_cnn_consistency_weight
         self.entmin_weight = args.entmin_weight
-        self.use_cls_balance = args.use_cls_balance
         self.drop_prob = args.drop_prob
         self.cnn_delta = args.cnn_delta
         self.fc_delta = args.fc_delta
@@ -56,8 +55,6 @@ class JointCnnFcTrainerSplit(object):
         self.vat = VirtualAdversarialPerturbationGenerator(self.feature_extractor, self.classifier, xi=args.xi,
                                                            eps=args.eps, ip=args.ip)
 
-        self.method = args.method
-        self.src_method = args.src_method
         self.args = args
 
         self.dataloaders = dataloaders
@@ -140,6 +137,7 @@ class JointCnnFcTrainerSplit(object):
                 target_vat_loss = self.target_vat_loss_weight * self.target_consistency_criterion(adv_vat_logits,
                                                                                                   clean_vat_logits)
                 target_vat_loss.backward()
+                # TODO: should be compatible with single gpu. remove .module
                 feature_extractor_grads = self.feature_extractor.module.stash_grad(feature_extractor_grads)
                 classifier_grads = self.classifier.module.stash_grad(feature_extractor_grads)
             else:
@@ -150,33 +148,28 @@ class JointCnnFcTrainerSplit(object):
             target_features1, target_features2 = self.feature_extractor(target_inputs)
             target_logits1 = self.classifier(target_features1)
 
-            if self.method == 'add':
-                target_elementwise_jacobian1, target_elementwise_jacobian2, clean_target_logits = calculate_jacobian(
-                    target_features2.detach(), target_logits1.detach(), self.fc_drop_size, self.classifier,
-                    self.target_consistency_criterion, self.reset_grad)
+            # Target AdD
+            target_elementwise_jacobian1, target_elementwise_jacobian2, clean_target_logits = calculate_jacobian(
+                target_features2.detach(), target_logits1.detach(), self.fc_drop_size, self.classifier,
+                self.target_consistency_criterion, self.reset_grad)
 
-                target_channelwise_jacobian = F.avg_pool2d(target_elementwise_jacobian1,
-                                                           kernel_size=target_elementwise_jacobian1.size()[2:])
+            target_channelwise_jacobian = F.avg_pool2d(target_elementwise_jacobian1,
+                                                       kernel_size=target_elementwise_jacobian1.size()[2:])
 
-                cnn_drop_delta = linear_rampup(epoch, self.rampup_length) * self.cnn_delta
-                target_dropout_mask_cnn, _ = create_adversarial_dropout_mask(
-                    torch.ones_like(target_channelwise_jacobian),
-                    target_channelwise_jacobian, cnn_drop_delta)
+            cnn_drop_delta = linear_rampup(epoch, self.rampup_length) * self.cnn_delta
+            target_dropout_mask_cnn, _ = create_adversarial_dropout_mask(
+                torch.ones_like(target_channelwise_jacobian),
+                target_channelwise_jacobian, cnn_drop_delta)
 
-                fc_drop_delta = linear_rampup(epoch, self.rampup_length) * self.fc_delta
-                target_dropout_mask_fc, _ = create_adversarial_dropout_mask(
-                    torch.ones_like(target_elementwise_jacobian2),
-                    target_elementwise_jacobian2, fc_drop_delta)
+            fc_drop_delta = linear_rampup(epoch, self.rampup_length) * self.fc_delta
+            target_dropout_mask_fc, _ = create_adversarial_dropout_mask(
+                torch.ones_like(target_elementwise_jacobian2),
+                target_elementwise_jacobian2, fc_drop_delta)
 
-                _, target_predicted = clean_target_logits.max(1)
-                average_meter_set.update('target_accuracy', target_predicted.eq(target_labels).sum().item(),
-                                         n=batch_size)
-                average_meter_set.update('delta', cnn_drop_delta)
-
-            elif self.method == 'pi':
-                target_dropout_mask_cnn = torch.ones_like(target_features2)
-            else:
-                raise ValueError("Fuck This World")
+            _, target_predicted = clean_target_logits.max(1)
+            average_meter_set.update('target_accuracy', target_predicted.eq(target_labels).sum().item(),
+                                     n=batch_size)
+            average_meter_set.update('delta', cnn_drop_delta)
 
             target_logits_cnn_drop = self.classifier(target_dropout_mask_cnn * target_features2)
             target_logits_fc_drop = self.classifier(target_features2, target_dropout_mask_fc)
@@ -188,12 +181,10 @@ class JointCnnFcTrainerSplit(object):
                 target_logits1)
             target_entropy_loss = self.entmin_weight * self.entmin_criterion(target_logits1)
             target_loss = target_consistency_loss + target_entropy_loss
+
             # Class balance
-            if self.use_cls_balance:
-                cls_balance_loss = 0.01 * (self.cls_balance_criterion(target_logits1) +
-                                           self.cls_balance_criterion(target_logits_cnn_drop))
-            else:
-                cls_balance_loss = torch.tensor(0).to(self.device)
+            cls_balance_loss = 0.01 * (self.cls_balance_criterion(target_logits1) +
+                                       self.cls_balance_criterion(target_logits_cnn_drop))
             target_loss += cls_balance_loss
             target_loss.backward()
             feature_extractor_grads = self.feature_extractor.module.stash_grad(feature_extractor_grads)
@@ -209,28 +200,9 @@ class JointCnnFcTrainerSplit(object):
             source_features1, source_features2 = self.feature_extractor(source_inputs)
             source_logits1 = self.classifier(source_features1)
 
-            if self.src_method == "add":
-                source_elementwise_jacobian1, source_elementwise_jacobian2, _ = \
-                    calculate_jacobian(source_features2.detach(), source_logits1.detach(), self.fc_drop_size,
-                                       self.classifier, self.source_consistency_criterion, self.reset_grad)
-                source_channelwise_jacobian = F.avg_pool2d(source_elementwise_jacobian1,
-                                                           kernel_size=source_elementwise_jacobian1.size()[2:])
-
-                source_delta_cnn = linear_rampup(epoch, self.source_rampup_length) * self.source_delta
-                source_dropout_mask_cnn, _ = create_adversarial_dropout_mask(
-                    torch.ones_like(source_channelwise_jacobian),
-                    source_channelwise_jacobian, source_delta_cnn)
-
-                source_delta_fc = self.source_delta_fc
-                source_dropout_mask_fc, _ = create_adversarial_dropout_mask(
-                    torch.ones_like(source_elementwise_jacobian2),
-                    source_elementwise_jacobian2, source_delta_fc)
-
-            elif self.src_method == 'pi':
-                source_dropout_mask_cnn = torch.ones((*source_features2.size()[:2], 1, 1)).to(self.device)
-                source_dropout_mask_fc = torch.ones(source_features1.size(0), self.fc_drop_size).to(self.device)
-            else:
-                raise ValueError("Fuck This World, Too")
+            # Source pi model
+            source_dropout_mask_cnn = torch.ones((*source_features2.size()[:2], 1, 1)).to(self.device)
+            source_dropout_mask_fc = torch.ones(source_features1.size(0), self.fc_drop_size).to(self.device)
 
             source_logits_cnn_drop = self.classifier(source_dropout_mask_cnn * source_features2)
             source_logits_fc_drop = self.classifier(source_features2, source_dropout_mask_fc)
