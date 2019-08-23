@@ -13,7 +13,7 @@ from utils import disable_tracking_bn_stats
 from vat import VirtualAdversarialPerturbationGenerator
 
 
-class JointCnnFcTrainerSplit(object):
+class DTATrainer(object):
     def __init__(self, models, dataloaders, optimizers, criterions, num_epochs, args,
                  log_period_as_iter=40000, train_loggers=None, val_loggers=None, device='cuda',
                  lr_schedulers=None, pretrain_epochs=0):

@@ -12,7 +12,7 @@ from losses import EntropyLoss, ClassBalanceLoss
 from misc import set_up_gpu, fix_random_seed_as, create_experiment_export_folder, export_experiments_config_as_json
 from models import create_feature_extractor, create_class_classifier
 from options import args as parsed_args
-from trainers.dta_trainer import JointCnnFcTrainerSplit
+from trainers.dta_trainer import DTATrainer
 from trainers.source_only_trainer import SourceOnlyTrainer
 
 
@@ -143,4 +143,4 @@ if __name__ == "__main__":
     if parsed_args.train_mode == 'source_only':
         main(parsed_args, SourceOnlyTrainer)
     elif parsed_args.train_mode == 'dta':
-        main(parsed_args, JointCnnFcTrainerSplit)
+        main(parsed_args, DTATrainer)
