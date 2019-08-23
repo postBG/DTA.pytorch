@@ -2,10 +2,9 @@ from collections import OrderedDict
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from tqdm import tqdm
 
-from dropout import create_adversarial_dropout_mask, calculate_jacobian
+from dropout import create_adversarial_dropout_mask, calculate_jacobians
 from losses import EntropyLoss
 from metrics import AverageMeterSet
 from ramps import linear_rampup
@@ -21,7 +20,6 @@ class DTATrainer(object):
         self.feature_extractor = nn.DataParallel(self.feature_extractor) if args.num_gpu > 1 else self.feature_extractor
 
         self.classifier = models['classifier'].to(device)
-        self.fc_drop_size = self.classifier.drop_size
         self.classifier = nn.DataParallel(self.classifier) if args.num_gpu > 1 else self.classifier
 
         self.optimizers = optimizers
@@ -40,6 +38,7 @@ class DTATrainer(object):
         self.source_fc_consistency_weight = args.source_fc_consistency_weight
         self.source_cnn_consistency_weight = args.source_cnn_consistency_weight
         self.entmin_weight = args.entmin_weight
+        self.cls_balance_weight = args.cls_balance_weight
         self.drop_prob = args.drop_prob
         self.cnn_delta = args.cnn_delta
         self.fc_delta = args.fc_delta
@@ -149,30 +148,27 @@ class DTATrainer(object):
             target_logits1 = self.classifier(target_features1)
 
             # Target AdD
-            target_elementwise_jacobian1, target_elementwise_jacobian2, clean_target_logits = calculate_jacobian(
-                target_features2.detach(), target_logits1.detach(), self.fc_drop_size, self.classifier,
-                self.target_consistency_criterion, self.reset_grad)
-
-            target_channelwise_jacobian = F.avg_pool2d(target_elementwise_jacobian1,
-                                                       kernel_size=target_elementwise_jacobian1.size()[2:])
+            jacobian_for_cnn_adv_drop, jacobian_for_fc_adv_drop, clean_target_logits = calculate_jacobians(
+                target_features2.detach(), target_logits1.detach(), self.classifier, self.target_consistency_criterion,
+                self.reset_grad)
 
             cnn_drop_delta = linear_rampup(epoch, self.rampup_length) * self.cnn_delta
-            target_dropout_mask_cnn, _ = create_adversarial_dropout_mask(
-                torch.ones_like(target_channelwise_jacobian),
-                target_channelwise_jacobian, cnn_drop_delta)
+            target_cnn_dropout_mask, _ = create_adversarial_dropout_mask(
+                torch.ones_like(jacobian_for_cnn_adv_drop),
+                jacobian_for_cnn_adv_drop, cnn_drop_delta)
 
             fc_drop_delta = linear_rampup(epoch, self.rampup_length) * self.fc_delta
-            target_dropout_mask_fc, _ = create_adversarial_dropout_mask(
-                torch.ones_like(target_elementwise_jacobian2),
-                target_elementwise_jacobian2, fc_drop_delta)
+            target_fc_dropout_mask, _ = create_adversarial_dropout_mask(
+                torch.ones_like(jacobian_for_fc_adv_drop),
+                jacobian_for_fc_adv_drop, fc_drop_delta)
 
             _, target_predicted = clean_target_logits.max(1)
             average_meter_set.update('target_accuracy', target_predicted.eq(target_labels).sum().item(),
                                      n=batch_size)
             average_meter_set.update('delta', cnn_drop_delta)
 
-            target_logits_cnn_drop = self.classifier(target_dropout_mask_cnn * target_features2)
-            target_logits_fc_drop = self.classifier(target_features2, target_dropout_mask_fc)
+            target_logits_cnn_drop = self.classifier(target_cnn_dropout_mask * target_features2)
+            target_logits_fc_drop = self.classifier(target_features2, target_fc_dropout_mask)
             target_consistency_loss = self.target_cnn_consistency_weight * self.target_consistency_criterion(
                 target_logits_cnn_drop,
                 target_logits1)
@@ -183,10 +179,11 @@ class DTATrainer(object):
             target_loss = target_consistency_loss + target_entropy_loss
 
             # Class balance
-            cls_balance_loss = 0.01 * (self.cls_balance_criterion(target_logits1) +
-                                       self.cls_balance_criterion(target_logits_cnn_drop))
+            cls_balance_loss = self.cls_balance_weight * (self.cls_balance_criterion(target_logits1) +
+                                                          self.cls_balance_criterion(target_logits_cnn_drop))
             target_loss += cls_balance_loss
             target_loss.backward()
+
             feature_extractor_grads = self.feature_extractor.module.stash_grad(feature_extractor_grads)
             classifier_grads = self.classifier.module.stash_grad(classifier_grads)
 
@@ -198,19 +195,12 @@ class DTATrainer(object):
 
             # Source CE Loss
             source_features1, source_features2 = self.feature_extractor(source_inputs)
-            source_logits1 = self.classifier(source_features1)
+            source_logits1, source_logits2 = self.classifier(source_features1), self.classifier(source_features2)
 
             # Source pi model
-            source_dropout_mask_cnn = torch.ones((*source_features2.size()[:2], 1, 1)).to(self.device)
-            source_dropout_mask_fc = torch.ones(source_features1.size(0), self.fc_drop_size).to(self.device)
-
-            source_logits_cnn_drop = self.classifier(source_dropout_mask_cnn * source_features2)
-            source_logits_fc_drop = self.classifier(source_features2, source_dropout_mask_fc)
             ce_loss = self.class_criterion(source_logits1, source_labels)
-            source_consistency_loss = self.source_cnn_consistency_weight * self.source_consistency_criterion(
-                source_logits_cnn_drop, source_logits1)
-            source_consistency_loss += self.source_fc_consistency_weight * self.source_consistency_criterion(
-                source_logits_fc_drop, source_logits1)
+            source_consistency_loss = 2 * self.source_cnn_consistency_weight * self.source_consistency_criterion(
+                source_logits2, source_logits1)
             source_loss = ce_loss + source_consistency_loss
             source_loss.backward()
 
@@ -219,12 +209,8 @@ class DTATrainer(object):
             average_meter_set.update('source_consistency_loss', source_consistency_loss.item())
             loss = source_loss.item() + target_loss.item()
             average_meter_set.update('loss', loss)
-            average_meter_set.update('ce_loss_ratio', source_loss.item() / loss)
-            average_meter_set.update('target_loss_ratio', target_loss.item() / loss)
-            _, predictions_adv = source_logits_cnn_drop.max(1)
             _, predictions_clean = source_logits1.max(1)
 
-            average_meter_set.update('adv_correct', predictions_adv.eq(source_labels).sum().item(), n=batch_size)
             average_meter_set.update('clean_correct', predictions_clean.eq(source_labels).sum().item(), n=batch_size)
 
             self.feature_extractor.module.restore_grad(feature_extractor_grads)

@@ -2,6 +2,8 @@ from copy import deepcopy
 
 import torch
 
+from models.visda_architectures import ResNetUpper
+
 
 def create_adversarial_dropout_mask(mask, jacobian, delta):
     """
@@ -47,17 +49,15 @@ def create_adversarial_dropout_mask(mask, jacobian, delta):
     return adv_mask.clone().detach(), (adv_mask == 0).nonzero()[:, 1]
 
 
-def calculate_jacobian(h, clean_logits, fc_size, classifier, consistency_criterion, reset_grad_fn):
-    h = h.detach()
-    clean_logits = clean_logits.detach()
-    mask = torch.ones_like(h)
-    mask2 = torch.ones(mask.size(0), fc_size).to(mask.device)  # SSip hard coding
-    mask.requires_grad = True
-    mask2.requires_grad = True
-    h_logits = classifier(mask * h, mask2)
-    discrepancy = consistency_criterion(h_logits, clean_logits)
+def calculate_jacobians(h, clean_logits, classifier: ResNetUpper, consistency_criterion, reset_grad_fn):
+    cnn_mask = torch.ones((*h.size()[:2], 1, 1)).to(h.device)
+    fc_mask = torch.ones(cnn_mask.size(0), classifier.drop_size).to(cnn_mask.device)
+    cnn_mask.requires_grad = True
+    fc_mask.requires_grad = True
 
-    # Calculate
+    h_logits = classifier(cnn_mask * h, fc_mask)
+    discrepancy = consistency_criterion(h_logits, clean_logits)
     discrepancy.backward()
+
     reset_grad_fn()
-    return mask.grad.clone(), mask2.grad.clone(), h_logits
+    return cnn_mask.grad.clone(), fc_mask.grad.clone(), h_logits

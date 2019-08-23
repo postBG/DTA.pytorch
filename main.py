@@ -32,8 +32,6 @@ def main(args, trainer_cls):
     update_feature_extractor_and_classifier = [
         MetricGraphPrinter(writer, key='clean_correct',
                            graph_label='clean_accuracy', group_name='update_feature_extractor_and_classifier'),
-        MetricGraphPrinter(writer, key='adv_correct',
-                           graph_label='adv_accuracy', group_name='update_feature_extractor_and_classifier'),
         MetricGraphPrinter(writer, key='loss',
                            graph_label='loss', group_name='update_feature_extractor_and_classifier'),
         MetricGraphPrinter(writer, key='ce_loss',
@@ -56,10 +54,6 @@ def main(args, trainer_cls):
                            group_name='update_feature_extractor_and_classifier'),
     ]
     extra_analysis = [
-        MetricGraphPrinter(writer, key='ce_loss_ratio',
-                           graph_label='ce_loss_ratio', group_name='analysis'),
-        MetricGraphPrinter(writer, key='target_loss_ratio',
-                           graph_label='target_loss_ratio', group_name='analysis'),
         MetricGraphPrinter(writer, key='delta', graph_label='delta', group_name='analysis'),
     ]
     train_loggers = [MetricGraphPrinter(writer, key='epoch',

@@ -63,6 +63,7 @@ parser.add_argument('--target_fc_consistency_weight', type=float, default=2, hel
 parser.add_argument('--target_cnn_consistency_weight', type=float, default=2, help='Target CNNdrop consistency weight')
 parser.add_argument('--source_fc_consistency_weight', type=float, default=1, help='Source FCdrop Consistency Weight')
 parser.add_argument('--source_cnn_consistency_weight', type=float, default=1, help='Source CNNdrop Consistency Weight')
+parser.add_argument('--cls_balance_weight', type=float, default=0.01, help='Class balance loss Weight')
 
 parser.add_argument('--entmin_weight', type=float, default=0., help='Target EntMin Weight')
 parser.add_argument('--delta', type=float, default=0.01, help='delta')

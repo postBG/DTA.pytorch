@@ -141,11 +141,11 @@ class ResNetUpper(AbstractModel):
         self.avgpool = nn.AvgPool2d(7, stride=1)
         self.relu = nn.ReLU(inplace=True)
         self.fc1 = nn.Linear(512 * 4, 1000)
-        self.fc2 = nn.Linear(1000, 1000)
+        self.fc2 = nn.Linear(1000, in_features)
         self.dropout = nn.Dropout(p=0.5)
         self.fc3 = nn.Linear(in_features, num_classes)
         self.n_classes = num_classes
-        self.drop_size = 1000
+        self.drop_size = in_features
         # Added FC Layers
 
     def _make_single_layer(self, block, planes):
