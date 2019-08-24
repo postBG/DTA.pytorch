@@ -40,7 +40,7 @@ def create_resnet_upper(model_name='resnet50', pretrained=True, num_classes=12):
 def resnet50(pretrained=True, is_lower=True, num_classes=12, **kwargs):
     model = ResNetLower(Bottleneck, [3, 4, 6, 2], **kwargs) if is_lower else ResNetUpper(num_classes=num_classes)
     if pretrained:
-        model.load_state_dict(resnet.model_zoo.load_url(model_urls['resnet50']))
+        model.load_state_dict(resnet.load_state_dict_from_url(model_urls['resnet50']))
         print("loaded pretrained resnet50")
     return model
 
@@ -48,7 +48,7 @@ def resnet50(pretrained=True, is_lower=True, num_classes=12, **kwargs):
 def resnet101(pretrained=True, is_lower=True, num_classes=12, **kwargs):
     model = ResNetLower(Bottleneck, [3, 4, 23, 2], **kwargs) if is_lower else ResNetUpper(num_classes=num_classes)
     if pretrained:
-        model.load_state_dict(resnet.model_zoo.load_url(model_urls['resnet101']))
+        model.load_state_dict(resnet.load_state_dict_from_url(model_urls['resnet101']))
         print("loaded pretrained resnet101")
     return model
 
@@ -56,7 +56,7 @@ def resnet101(pretrained=True, is_lower=True, num_classes=12, **kwargs):
 def resnet152(pretrained=True, is_lower=True, num_classes=12, **kwargs):
     model = ResNetLower(Bottleneck, [3, 8, 36, 2], **kwargs) if is_lower else ResNetUpper(num_classes=num_classes)
     if pretrained:
-        model.load_state_dict(resnet.model_zoo.load_url(model_urls['resnet152']))
+        model.load_state_dict(resnet.load_state_dict_from_url(model_urls['resnet152']))
         print("loaded pretrained resnet152")
     return model
 

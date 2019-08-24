@@ -65,18 +65,12 @@ def main(args, trainer_cls):
         MetricGraphPrinter(writer, key='target_accuracy',
                            graph_label='target_accuracy', group_name='val_target'),
     ]
-    val_source_loggers = [
-        MetricGraphPrinter(writer, key='source_ce_loss',
-                           graph_label='source_ce_loss', group_name='val_source'),
-        MetricGraphPrinter(writer, key='source_accuracy',
-                           graph_label='source_accuracy', group_name='val_source'),
-    ]
     val_loggers = [
                       RecentModelCheckpointLogger(os.path.join(export_root, 'experiments'),
                                                   checkpoint_period=args.checkpoint_period),
                       BestAccuracyModelTracker(os.path.join(export_root, 'experiments'),
                                                metric_key='target_accuracy'),
-                  ] + val_target_loggers + val_source_loggers
+                  ] + val_target_loggers
 
     criterions = {
         'classifier': nn.CrossEntropyLoss(),

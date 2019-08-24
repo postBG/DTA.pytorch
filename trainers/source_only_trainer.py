@@ -33,13 +33,13 @@ class SourceOnlyTrainer(object):
 
     def train(self):
         accum_iter = 0
-        self.validate(0, self.dataloaders['val'], self.dataloaders['source_val'], accum_iter)
+        self.validate(0, self.dataloaders['val'], accum_iter)
         for epoch in range(self.num_epochs):
             for phase in ['train', 'val']:
                 if phase == 'train':
                     _, accum_iter = self.train_one_epoch(epoch, self.dataloaders[phase], accum_iter)
                 else:
-                    self.validate(epoch, self.dataloaders['val'], self.dataloaders['source_val'], accum_iter)
+                    self.validate(epoch, self.dataloaders['val'], accum_iter)
 
         self._complete_logging({
             'state_dict': (self._create_state_dict())
@@ -117,7 +117,7 @@ class SourceOnlyTrainer(object):
                 self._call_loggers(self.train_loggers, log_data)
 
             if self._is_validation_needed(accum_iter):
-                self.validate(epoch, self.dataloaders['val'], self.dataloaders['source_val'], accum_iter)
+                self.validate(epoch, self.dataloaders['val'], accum_iter)
                 self.feature_extractor.train()
                 self.classifier.train()
 
@@ -129,14 +129,14 @@ class SourceOnlyTrainer(object):
     def _is_validation_needed(self, accum_iter):
         return accum_iter % self.validation_period_as_iter < self.args.batch_size and accum_iter != 0
 
-    def validate(self, epoch, dataloader, source_dataloader, accum_iter):
+    def validate(self, epoch, target_dataloader, accum_iter):
         self.feature_extractor.eval()
         self.classifier.eval()
 
         average_meter_set = AverageMeterSet()
 
         with torch.no_grad():
-            tqdm_dataloader = tqdm(dataloader)
+            tqdm_dataloader = tqdm(target_dataloader)
             for batch_idx, (target_inputs, target_labels) in enumerate(tqdm_dataloader):
                 target_inputs, target_labels = target_inputs.to(self.device), target_labels.to(self.device)
 
@@ -152,29 +152,12 @@ class SourceOnlyTrainer(object):
                 average_meter_set['target_ce_loss'].avg, 100 * average_meter_set['target_correct'].avg,
             ))
 
-            tqdm_source_dataloader = tqdm(source_dataloader)
-            for batch_idx, (source_inputs, source_labels) in enumerate(tqdm_source_dataloader):
-                source_inputs, source_labels = source_inputs.to(self.device), source_labels.to(self.device)
-
-                source_logits = self.classifier(self.feature_extractor(source_inputs)[0])
-
-                _, source_predictions = source_logits.max(1)
-                average_meter_set.update('source_ce_loss', self.class_criterion(source_logits, source_labels))
-                average_meter_set.update('source_correct', source_predictions.eq(source_labels).sum().item(),
-                                         n=source_inputs.size(0))
-
-                tqdm_source_dataloader.set_description("source_ce_loss1: {:.3f}, source_correct1: {:.3f},".format(
-                    average_meter_set['source_ce_loss'].avg, 100 * average_meter_set['source_correct'].avg,
-                ))
-
             log_data = {
                 'state_dict': (self._create_state_dict()),
                 'epoch': epoch,
                 'accum_iter': accum_iter,
                 'target_ce_loss': average_meter_set['target_ce_loss'].avg,
                 'target_accuracy': 100 * average_meter_set['target_correct'].avg,
-                'source_ce_loss': average_meter_set['source_ce_loss'].avg,
-                'source_accuracy': 100 * average_meter_set['source_correct'].avg,
             }
             self._call_loggers(self.val_loggers, log_data)
 

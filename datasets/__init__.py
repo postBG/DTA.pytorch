@@ -40,26 +40,20 @@ def dataloaders_factory(args):
 
     target_transform_type = get_eval_transform_type(target_dataset_code)
     target_val_dataset = dataset_factory(target_dataset_code, target_transform_type, is_train=False)
-    source_val_dataset = dataset_factory(source_dataset_code, target_transform_type, is_train=False)
 
     if args.test:
         train_dataset = Subset(train_dataset, np.random.randint(0, len(train_dataset), args.batch_size * 5))
         target_val_dataset = Subset(target_val_dataset,
                                     np.random.randint(0, len(target_val_dataset), args.batch_size * 5))
-        source_val_dataset = Subset(source_val_dataset,
-                                    np.random.randint(0, len(source_val_dataset), args.batch_size * 5))
 
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=32, shuffle=True,
                                   pin_memory=True)
 
     target_val_dataloader = DataLoader(target_val_dataset,
                                        batch_size=args.batch_size, num_workers=16, shuffle=False, pin_memory=True)
-    source_val_dataloader = DataLoader(source_val_dataset,
-                                       batch_size=args.batch_size, num_workers=16, shuffle=False, pin_memory=True)
     return {
         'train': train_dataloader,
-        'val': target_val_dataloader,
-        'source_val': source_val_dataloader
+        'val': target_val_dataloader
     }
 
 

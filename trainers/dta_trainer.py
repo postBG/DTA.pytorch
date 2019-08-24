@@ -7,6 +7,7 @@ from tqdm import tqdm
 from dropout import create_adversarial_dropout_mask, calculate_jacobians
 from losses import EntropyLoss
 from metrics import AverageMeterSet
+from models.visda_architectures import ResNetLower, ResNetUpper
 from ramps import linear_rampup
 from utils import disable_tracking_bn_stats
 from vat import VirtualAdversarialPerturbationGenerator
@@ -16,20 +17,19 @@ class DTATrainer(object):
     def __init__(self, models, dataloaders, optimizers, criterions, num_epochs, args,
                  log_period_as_iter=40000, train_loggers=None, val_loggers=None, device='cuda',
                  lr_schedulers=None, pretrain_epochs=0):
-        self.feature_extractor = models['feature_extractor'].to(device)
-        self.feature_extractor = nn.DataParallel(self.feature_extractor) if args.num_gpu > 1 else self.feature_extractor
+        assert isinstance(models['feature_extractor'], ResNetLower)
+        assert isinstance(models['classifier'], ResNetUpper)
 
-        self.classifier = models['classifier'].to(device)
-        self.classifier = nn.DataParallel(self.classifier) if args.num_gpu > 1 else self.classifier
+        self.feature_extractor = nn.DataParallel(models['feature_extractor']).to(device)
+        self.classifier = nn.DataParallel(models['classifier']).to(device)
 
         self.optimizers = optimizers
 
-        self.criterions = criterions
-        self.class_criterion = self.criterions['classifier']
-        self.source_consistency_criterion = self.criterions['source_consistency']
-        self.target_consistency_criterion = self.criterions['target_consistency']
-        self.entmin_criterion = self.criterions['entmin']
-        self.cls_balance_criterion = self.criterions['class_balance']
+        self.class_criterion = criterions['classifier']
+        self.source_consistency_criterion = criterions['source_consistency']
+        self.target_consistency_criterion = criterions['target_consistency']
+        self.entmin_criterion = criterions['entmin']
+        self.cls_balance_criterion = criterions['class_balance']
 
         self.entropy_loss = EntropyLoss()
 
@@ -69,17 +69,19 @@ class DTATrainer(object):
 
     def train(self):
         accum_iter = 0
-        self.validate(0, self.dataloaders['val'], self.dataloaders['source_val'], accum_iter)
+        self.validate(0, self.dataloaders['val'], accum_iter)
         for epoch in range(self.num_epochs):
-            for phase in ['train', 'val']:
-                if phase == 'train':
-                    _, accum_iter = self.train_one_epoch(epoch, self.dataloaders[phase], accum_iter)
-                else:
-                    self.validate(epoch, self.dataloaders['val'], self.dataloaders['source_val'], accum_iter)
+            _, accum_iter = self.train_one_epoch(epoch, self.dataloaders['train'], accum_iter)
+            self._step_schedulers()
+            self.validate(epoch, self.dataloaders['val'], accum_iter)
 
         self._complete_logging({
             'state_dict': (self._create_state_dict())
         })
+
+    def _step_schedulers(self):
+        for scheduler in self.lr_schedulers.values():
+            scheduler.step()
 
     def _complete_logging(self, log_data):
         for logger in self.train_loggers:
@@ -107,9 +109,6 @@ class DTATrainer(object):
         self.feature_extractor.train()
         self.classifier.train()
 
-        for scheduler in self.lr_schedulers.values():
-            scheduler.step()
-
         average_meter_set = AverageMeterSet()
         tqdm_dataloader = tqdm(dataloader, ncols=150)
 
@@ -136,7 +135,6 @@ class DTATrainer(object):
                 target_vat_loss = self.target_vat_loss_weight * self.target_consistency_criterion(adv_vat_logits,
                                                                                                   clean_vat_logits)
                 target_vat_loss.backward()
-                # TODO: should be compatible with single gpu. remove .module
                 feature_extractor_grads = self.feature_extractor.module.stash_grad(feature_extractor_grads)
                 classifier_grads = self.classifier.module.stash_grad(feature_extractor_grads)
             else:
@@ -148,9 +146,10 @@ class DTATrainer(object):
             target_logits1 = self.classifier(target_features1)
 
             # Target AdD
+            # TODO: refactor this signature
             jacobian_for_cnn_adv_drop, jacobian_for_fc_adv_drop, clean_target_logits = calculate_jacobians(
-                target_features2.detach(), target_logits1.detach(), self.classifier, self.target_consistency_criterion,
-                self.reset_grad)
+                target_features2.detach(), target_logits1.detach(), self.classifier, self.classifier.module.drop_size,
+                self.target_consistency_criterion, self.reset_grad)
 
             cnn_drop_delta = linear_rampup(epoch, self.rampup_length) * self.cnn_delta
             target_cnn_dropout_mask, _ = create_adversarial_dropout_mask(
@@ -237,7 +236,7 @@ class DTATrainer(object):
                 self._call_loggers(self.train_loggers, log_data)
 
             if self._is_validation_needed(accum_iter):
-                self.validate(epoch, self.dataloaders['val'], self.dataloaders['source_val'], accum_iter)
+                self.validate(epoch, self.dataloaders['val'], accum_iter)
                 self.feature_extractor.train()
                 self.classifier.train()
 
@@ -252,7 +251,7 @@ class DTATrainer(object):
         else:
             return accum_iter % self.validation_period_as_iter < self.args.batch_size and accum_iter != 0
 
-    def validate(self, epoch, dataloader, source_dataloader, accum_iter):
+    def validate(self, epoch, dataloader, accum_iter):
         self.feature_extractor.eval()
         self.classifier.eval()
 
@@ -275,29 +274,12 @@ class DTATrainer(object):
                 average_meter_set['target_ce_loss'].avg, 100 * average_meter_set['target_correct'].avg,
             ))
 
-            tqdm_source_dataloader = tqdm(source_dataloader)
-            for batch_idx, (source_inputs, source_labels) in enumerate(tqdm_source_dataloader):
-                source_inputs, source_labels = source_inputs.to(self.device), source_labels.to(self.device)
-
-                source_logits = self.classifier(self.feature_extractor(source_inputs)[0])
-
-                _, source_predictions = source_logits.max(1)
-                average_meter_set.update('source_ce_loss', self.class_criterion(source_logits, source_labels))
-                average_meter_set.update('source_correct', source_predictions.eq(source_labels).sum().item(),
-                                         n=source_inputs.size(0))
-
-                tqdm_source_dataloader.set_description("source_ce_loss1: {:.3f}, source_correct1: {:.3f},".format(
-                    average_meter_set['source_ce_loss'].avg, 100 * average_meter_set['source_correct'].avg,
-                ))
-
             log_data = {
                 'state_dict': (self._create_state_dict()),
                 'epoch': epoch,
                 'accum_iter': accum_iter,
                 'target_ce_loss': average_meter_set['target_ce_loss'].avg,
                 'target_accuracy': 100 * average_meter_set['target_correct'].avg,
-                'source_ce_loss': average_meter_set['source_ce_loss'].avg,
-                'source_accuracy': 100 * average_meter_set['source_correct'].avg,
             }
             self._call_loggers(self.val_loggers, log_data)
 

@@ -14,7 +14,7 @@ parser.add_argument('--template', type=str, default='.', help='Load template fil
 parser.add_argument('--lr', type=float, default=0.001, help='learning rate (default: 0.001)')
 parser.add_argument('--epoch', type=int, default=80, help='epoch (default: 100)')
 parser.add_argument('--num_gpu', type=int, default=1, help='number of GPUs')
-parser.add_argument('--device_idx', type=str, default='0,1', help='Gpu idx')
+parser.add_argument('--device_idx', type=str, default='0', help='Gpu idx')
 parser.add_argument('--weight_decay', type=float, default=0, help='l2 regularization lambda (default: 0)')
 parser.add_argument('--decay_step', type=int, default=15, help='num epochs for decaying learning rate')
 parser.add_argument('--momentum', type=float, default=0.9, help='SGD momentum')

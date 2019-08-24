@@ -165,8 +165,10 @@ def set_template(args):
     elif args.template == 'res50_rnd_seed':
         # args.device_idx = '4,5,6,7'
         # args.device_idx = '0,1,2,3'
+        args.test = True
         args.train_mode = 'dta'
-        args.batch_size = 128
+        args.batch_size = 64
+        args.device_idx = '0'
         args.lr = 0.001
         args.epoch = 20
         args.optimizer = 'SGD'

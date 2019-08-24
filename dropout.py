@@ -49,9 +49,9 @@ def create_adversarial_dropout_mask(mask, jacobian, delta):
     return adv_mask.clone().detach(), (adv_mask == 0).nonzero()[:, 1]
 
 
-def calculate_jacobians(h, clean_logits, classifier: ResNetUpper, consistency_criterion, reset_grad_fn):
+def calculate_jacobians(h, clean_logits, classifier, fc_mask_size, consistency_criterion, reset_grad_fn):
     cnn_mask = torch.ones((*h.size()[:2], 1, 1)).to(h.device)
-    fc_mask = torch.ones(cnn_mask.size(0), classifier.drop_size).to(cnn_mask.device)
+    fc_mask = torch.ones(cnn_mask.size(0), fc_mask_size).to(cnn_mask.device)
     cnn_mask.requires_grad = True
     fc_mask.requires_grad = True
 
