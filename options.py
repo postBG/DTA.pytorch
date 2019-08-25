@@ -48,12 +48,6 @@ parser.add_argument('--train_mode', type=str, default='dta', choices=['dta', 'so
                     help='Train mode')
 
 #########################
-# Hide and Seek Settings
-#########################
-parser.add_argument('--use_hide_and_seek', type=bool, default=False, help='Use Hide and Seek')
-parser.add_argument('--hide_prob', type=float, default=0.5, help='Probability of Hide patch')
-
-#########################
 # Adversarial Dropout Settings
 #########################
 parser.add_argument('--drop_prob', type=float, default=0.0, help='Probability of dropping unit')

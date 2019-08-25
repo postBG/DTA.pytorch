@@ -4,7 +4,6 @@ from torch.utils.data import DataLoader, Subset
 
 from datasets.utils import CombinedDataSet
 from datasets.visda import CustomVisdaTarget, CustomVisdaSource
-from augmentations.hide_and_seek import HideAndSeek
 
 DATA_SETS = {
     CustomVisdaTarget.code(): CustomVisdaTarget,
@@ -12,11 +11,9 @@ DATA_SETS = {
 }
 
 
-def dataset_factory(dataset_code, transform_type, is_train=True, use_hide_and_seek=False, hide_prob=0.5, **kwargs):
+def dataset_factory(dataset_code, transform_type, is_train=True, **kwargs):
     cls = DATA_SETS[dataset_code]
     transform = cls.train_transform_config(transform_type) if is_train else cls.eval_transform_config(transform_type)
-    if use_hide_and_seek:
-        transform = transforms.Compose([transform, HideAndSeek(cls.img_size(), hide_prob=hide_prob)])
 
     print("{} has been created.".format(cls.code()))
     return cls(transform=transform, is_train=is_train, **kwargs)
@@ -28,10 +25,8 @@ def dataloaders_factory(args):
     transform_type = args.transform_type
 
     if source_dataset_code == CustomVisdaSource.code() and target_dataset_code == CustomVisdaTarget.code():
-        source_train_dataset = dataset_factory(source_dataset_code, transform_type + '_source', is_train=True,
-                                               use_hide_and_seek=args.use_hide_and_seek, hide_prob=args.hide_prob)
-        target_train_dataset = dataset_factory(target_dataset_code, transform_type + '_target', is_train=True,
-                                               use_hide_and_seek=False, hide_prob=args.hide_prob)
+        source_train_dataset = dataset_factory(source_dataset_code, transform_type + '_source', is_train=True)
+        target_train_dataset = dataset_factory(target_dataset_code, transform_type + '_target', is_train=True)
     else:
         source_train_dataset = dataset_factory(source_dataset_code, transform_type, is_train=True)
         target_train_dataset = dataset_factory(target_dataset_code, transform_type, is_train=True)
