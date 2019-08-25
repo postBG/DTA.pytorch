@@ -165,10 +165,9 @@ def set_template(args):
     elif args.template == 'res50_rnd_seed':
         # args.device_idx = '4,5,6,7'
         # args.device_idx = '0,1,2,3'
-        args.test = True
         args.train_mode = 'dta'
-        args.batch_size = 64
-        args.device_idx = '0'
+        args.batch_size = 128
+        args.device_idx = '0,1'
         args.lr = 0.001
         args.epoch = 20
         args.optimizer = 'SGD'
@@ -191,7 +190,7 @@ def set_template(args):
         args.source_consistency_loss = 'l2'
         args.model = 'resnet50'
         args.source_delta = 0.0025
-        args.use_vat = True
+        args.use_vat = False
         args.eps = 15
         args.target_vat_loss_weight = 0.2
         args.experiment_description = 'res50_best_randomseed'

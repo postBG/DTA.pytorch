@@ -69,7 +69,7 @@ class DTATrainer(object):
 
     def train(self):
         accum_iter = 0
-        self.validate(0, self.dataloaders['val'], accum_iter)
+        # self.validate(0, self.dataloaders['val'], accum_iter)
         for epoch in range(self.num_epochs):
             _, accum_iter = self.train_one_epoch(epoch, self.dataloaders['train'], accum_iter)
             self._step_schedulers()
