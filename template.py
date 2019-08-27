@@ -2,7 +2,10 @@
 def set_template(args):
     print("Template Setting: {}".format(args.template))
 
-    if args.template == 'fc_drop':
+    if args.template == '':
+        pass
+
+    elif args.template == 'fc_drop':
         args.device_idx = '0,1,2,3'
         # args.device_idx = '4,5,6,7'
         args.train_mode = 'fc_add'

@@ -3,10 +3,10 @@ import argparse
 from datasets import DATA_SETS
 from template import set_template
 
-parser = argparse.ArgumentParser(description='PyTorch Self-Ensembling Killer')
+parser = argparse.ArgumentParser(description='Options for DTA.pytorch')
 
 # Load Template
-parser.add_argument('--template', type=str, default='.', help='Load template file')
+parser.add_argument('--template', type=str, default='', help='Load template file')
 
 #########################
 # General Train Settings
