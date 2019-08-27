@@ -1,5 +1,4 @@
 import numpy as np
-import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, Subset
 
 from datasets.utils import CombinedDataSet
@@ -9,6 +8,13 @@ DATA_SETS = {
     CustomVisdaTarget.code(): CustomVisdaTarget,
     CustomVisdaSource.code(): CustomVisdaSource,
 }
+
+
+def _get_eval_transform_type(target_dataset_code):
+    if target_dataset_code == CustomVisdaTarget.code():
+        return 'visda_standard'
+    else:
+        return 'none'
 
 
 def dataset_factory(dataset_code, transform_type, is_train=True, **kwargs):
@@ -33,7 +39,7 @@ def dataloaders_factory(args):
 
     train_dataset = CombinedDataSet(source_train_dataset, target_train_dataset)
 
-    target_transform_type = get_eval_transform_type(target_dataset_code)
+    target_transform_type = _get_eval_transform_type(target_dataset_code)
     target_val_dataset = dataset_factory(target_dataset_code, target_transform_type, is_train=False)
 
     if args.test:
@@ -50,37 +56,3 @@ def dataloaders_factory(args):
         'train': train_dataloader,
         'val': target_val_dataloader
     }
-
-
-def get_eval_transform_type(target_dataset_code):
-    if target_dataset_code == CustomVisdaTarget.code():
-        return 'visda_standard'
-    else:
-        return 'none'
-
-
-def calculate_dataset_stats(dataset_code, transform=None):
-    """
-    Calculate channel-wise stats of a given dataset
-    :param dataset_code: Dataset Code
-    :type transform: object
-    :return: mean, std
-    """
-    transform = transform if transform else transforms.ToTensor()
-    dataset = DATA_SETS[dataset_code](transform=transform)
-    dataloader = DataLoader(dataset, batch_size=512, num_workers=8, shuffle=False)
-
-    mean = 0.
-    std = 0.
-    nb_samples = 0.
-    for data, _ in dataloader:
-        batch_samples = data.size(0)
-        data = data.view(batch_samples, data.size(1), -1)
-        mean += data.mean(2).sum(0)
-        std += data.std(2).sum(0)
-        nb_samples += batch_samples
-
-    mean /= nb_samples
-    std /= nb_samples
-    print("Mean: {}, std: {}".format(mean, std))
-    return mean, std

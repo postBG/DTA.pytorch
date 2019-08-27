@@ -1,15 +1,15 @@
 import random
-
 import torch.utils.data as data
-import torchvision.transforms as transforms
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
+from torchvision import transforms as transforms
 
 from augmentations.minimum import RandomGaussianNoise
 from augmentations.misc import Identity
 from augmentations.standard import RandomTranslationAndHorizontalFlip, RandomTranslation, RandomHorizontalFlip
-
-
 # TODO: Refactor this
+from datasets import DATA_SETS
+
+
 class AbstractDataSet(object):
     @staticmethod
     def num_class():
@@ -153,3 +153,30 @@ class JointDataset(Dataset):
             img, label = self.dataset2[idx - self.len_dataset1]
             domain = 1.0
         return img, float(label), domain
+
+
+def calculate_dataset_stats(dataset_code, transform=None):
+    """
+    Calculate channel-wise stats of a given dataset
+    :param dataset_code: Dataset Code
+    :type transform: object
+    :return: mean, std
+    """
+    transform = transform if transform else transforms.ToTensor()
+    dataset = DATA_SETS[dataset_code](transform=transform)
+    dataloader = DataLoader(dataset, batch_size=512, num_workers=8, shuffle=False)
+
+    mean = 0.
+    std = 0.
+    nb_samples = 0.
+    for data, _ in dataloader:
+        batch_samples = data.size(0)
+        data = data.view(batch_samples, data.size(1), -1)
+        mean += data.mean(2).sum(0)
+        std += data.std(2).sum(0)
+        nb_samples += batch_samples
+
+    mean /= nb_samples
+    std /= nb_samples
+    print("Mean: {}, std: {}".format(mean, std))
+    return mean, std
