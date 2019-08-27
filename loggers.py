@@ -1,14 +1,12 @@
 import os
-
-import matplotlib.pyplot as plt
-import numpy as np
 import torch
+from abc import ABC
 from torchvision.transforms import ToTensor
 
 to_tensor = ToTensor()
 
 
-class AbstractLogger(object):
+class AbstractLogger(ABC):
     def log(self, *args, **kwargs):
         raise NotImplementedError
 
@@ -66,8 +64,8 @@ class PerEpochModelCheckpointLogger(AbstractLogger):
         torch.save(kwargs['state_dict'], _checkpoint_file_path(self.export_path, self.ckpt_final_filename))
 
 
-class BestAccuracyModelTracker(AbstractLogger):
-    def __init__(self, export_path, metric_key='accuracy', ckpt_filename='best_acc_model.pth'):
+class BestModelTracker(AbstractLogger):
+    def __init__(self, export_path, metric_key, ckpt_filename='best_acc_model.pth'):
         self.export_path = export_path
         if not os.path.exists(self.export_path):
             os.mkdir(self.export_path)
@@ -87,12 +85,11 @@ class BestAccuracyModelTracker(AbstractLogger):
         pass
 
 
-# TODO: Refactor this
 class MetricGraphPrinter(AbstractLogger):
-    def __init__(self, writer, key='train_loss', graph_label='Train Loss', group_name='metric'):
+    def __init__(self, writer, key='train_loss', graph_label=None, namespace='metric'):
         self.key = key
-        self.graph_label = graph_label
-        self.group_name = group_name
+        self.graph_label = graph_label if graph_label else self.key
+        self.group_name = namespace
         self.writer = writer
 
     def log(self, *args, **kwargs):
@@ -100,48 +97,6 @@ class MetricGraphPrinter(AbstractLogger):
             self.writer.add_scalar(self.group_name + '/' + self.graph_label, kwargs[self.key], kwargs['accum_iter'])
         else:
             self.writer.add_scalar(self.group_name + '/' + self.graph_label, 0, kwargs['accum_iter'])
-
-    def complete(self, *args, **kwargs):
-        self.writer.close()
-
-
-# TODO: Refactor this
-class ParamsHistogramPrinter(AbstractLogger):
-    def __init__(self, writer, model, param_name='fc1.weight', graph_label='Fc1 Weight',
-                 group_name='Train Parameters'):
-        self.model = model
-        self.param_name = param_name
-        self.graph_label = graph_label
-        self.group_name = group_name
-        self.writer = writer
-
-    def log(self, *args, **kwargs):
-        for name, param in self.model.named_parameters():
-            if name == self.param_name:
-                self.writer.add_histogram(self.group_name + '/' + self.graph_label,
-                                          param.clone().data, kwargs['accum_iter'])
-
-    def complete(self, *args, **kwargs):
-        self.writer.close()
-
-
-# TODO: Refactor this
-class HistogramPrinter(AbstractLogger):
-    def __init__(self, writer, key='source_dropout_frequencies_accum', graph_label='Source Dropout Frequency',
-                 group_name='histogram'):
-        self.key = key
-        self.graph_label = graph_label
-        self.group_name = group_name
-        self.writer = writer
-
-    def log(self, *args, **kwargs):
-        frequency_data = kwargs[self.key]
-        fig = plt.figure()
-        fig.tight_layout(pad=0)
-        ax1 = fig.add_subplot(111)
-        ax1.bar(np.arange(0, len(frequency_data)), frequency_data)
-
-        self.writer.add_figure(self.group_name + '/' + self.graph_label, fig, kwargs['epoch'])
 
     def complete(self, *args, **kwargs):
         self.writer.close()
