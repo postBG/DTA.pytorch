@@ -67,11 +67,6 @@ parser.add_argument('--source_delta', type=float, default=0.1, help='Delta value
 parser.add_argument('--source_delta_fc', type=float, default=0.1, help='Delta value for source, fc layer')
 
 #########################
-# Layer Ablation settings
-#########################
-parser.add_argument('--cut_position', type=int, default=4, choices=[1, 2, 3, 4], help='Cut resnet after layer x')
-
-#########################
 # VAT settings
 #########################
 parser.add_argument('--use_vat', type=bool, default=False, help='Use VAT or not')
