@@ -1,8 +1,5 @@
-from copy import deepcopy
-
 import torch
-
-from models.visda_architectures import ResNetUpper
+from copy import deepcopy
 
 
 def create_adversarial_dropout_mask(mask, jacobian, delta):
