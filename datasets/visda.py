@@ -4,7 +4,7 @@ import torchvision.transforms as transforms
 from torchvision.datasets import ImageFolder
 
 from augmentations.misc import ToRGB
-from datasets.utils import AbstractDataSet
+from datasets.base import AbstractDataSet
 
 VISDA_DEFAULT_ROOT = '/data/visda2017'
 VISDA_CHANNEL_STATS_source = {'mean': [0.485, 0.456, 0.406], 'std': [0.229, 0.224, 0.225]}

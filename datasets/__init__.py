@@ -1,8 +1,7 @@
 import numpy as np
 from torch.utils.data import DataLoader, Subset
-from torchvision import transforms as transforms
 
-from datasets.utils import CombinedDataSet
+from datasets.base import CombinedDataSet
 from datasets.visda import CustomVisdaTarget, CustomVisdaSource
 
 DATA_SETS = {
@@ -40,30 +39,3 @@ def dataloaders_factory(args):
         'train': train_dataloader,
         'val': target_val_dataloader
     }
-
-
-def calculate_dataset_stats(dataset_code, transform=None):
-    """
-    Calculate channel-wise stats of a given dataset
-    :param dataset_code: Dataset Code
-    :type transform: object
-    :return: mean, std
-    """
-    transform = transform if transform else transforms.ToTensor()
-    dataset = DATA_SETS[dataset_code](transform=transform)
-    dataloader = DataLoader(dataset, batch_size=512, num_workers=8, shuffle=False)
-
-    mean = 0.
-    std = 0.
-    nb_samples = 0.
-    for data, _ in dataloader:
-        batch_samples = data.size(0)
-        data = data.view(batch_samples, data.size(1), -1)
-        mean += data.mean(2).sum(0)
-        std += data.std(2).sum(0)
-        nb_samples += batch_samples
-
-    mean /= nb_samples
-    std /= nb_samples
-    print("Mean: {}, std: {}".format(mean, std))
-    return mean, std
