@@ -39,7 +39,6 @@ class DTATrainer(object):
         self.source_cnn_consistency_weight = args.source_cnn_consistency_weight
         self.entmin_weight = args.entmin_weight
         self.cls_balance_weight = args.cls_balance_weight
-        self.drop_prob = args.drop_prob
         self.cnn_delta = args.cnn_delta
         self.fc_delta = args.fc_delta
         self.source_delta = args.source_delta
