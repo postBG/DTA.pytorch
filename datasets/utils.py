@@ -1,14 +1,14 @@
 import random
+
 import torch.utils.data as data
 from torch.utils.data import Dataset
 from torchvision import transforms as transforms
 
-from augmentations.minimum import RandomGaussianNoise
 from augmentations.misc import Identity
-from augmentations.standard import RandomTranslationAndHorizontalFlip, RandomTranslation, RandomHorizontalFlip
+from augmentations.standard import RandomHorizontalFlip
+
+
 # TODO: Refactor this
-
-
 class AbstractDataSet(object):
     @staticmethod
     def num_class():
@@ -30,16 +30,6 @@ class AbstractDataSet(object):
     def train_transform_config(cls, transform_type=None):
         config = cls._add_additional_transform(
             {
-                'none': transforms.Compose([transforms.ToTensor(), transforms.Normalize(**cls.statistics())]),
-                'minimum': transforms.Compose(
-                    [RandomGaussianNoise(), transforms.ToTensor(), transforms.Normalize(**cls.statistics())]),
-                'standard': transforms.Compose([RandomTranslationAndHorizontalFlip(max_translation=2),
-                                                transforms.ToTensor(), transforms.Normalize(**cls.statistics())]),
-                'no_hflip': transforms.Compose(
-                    [RandomGaussianNoise(), RandomTranslation(max_translation=2), transforms.ToTensor(),
-                     transforms.Normalize(**cls.statistics())]),
-                'translate': transforms.Compose(
-                    [RandomTranslation(), transforms.ToTensor(), transforms.Normalize(**cls.statistics())]),
                 'visda_standard_source': transforms.Compose([transforms.RandomResizedCrop(size=224, scale=(0.75, 1.33)),
                                                              RandomHorizontalFlip(),
                                                              transforms.ToTensor(),
@@ -48,25 +38,16 @@ class AbstractDataSet(object):
                                                              RandomHorizontalFlip(),
                                                              transforms.ToTensor(),
                                                              transforms.Normalize(**cls.statistics())]),
-                'office_standard': transforms.Compose([transforms.RandomResizedCrop(size=224, scale=(0.75, 1.00)),
-                                                       RandomHorizontalFlip(),
-                                                       transforms.ToTensor(),
-                                                       transforms.Normalize(**cls.statistics())])
             })
         return config[transform_type] if transform_type else config
 
     @classmethod
     def eval_transform_config(cls, transform_type=None):
         config = cls._add_additional_transform(
-            {'none': transforms.Compose([transforms.ToTensor(), transforms.Normalize(**cls.statistics())]),
-             'minimum': transforms.Compose([transforms.ToTensor(), transforms.Normalize(**cls.statistics())]),
-             'standard': transforms.Compose([transforms.ToTensor(), transforms.Normalize(**cls.statistics())]),
-             'no_hflip': transforms.Compose([transforms.ToTensor(), transforms.Normalize(**cls.statistics())]),
-             'visda_standard': transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor(),
-                                                   transforms.Normalize(**cls.statistics())]),
-             'office_standard': transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor(),
-                                                    transforms.Normalize(**cls.statistics())])
-             })
+            {
+                'visda_standard': transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor(),
+                                                      transforms.Normalize(**cls.statistics())])
+            })
         try:
             return config[transform_type] if transform_type else config
         except KeyError:
@@ -152,5 +133,3 @@ class JointDataset(Dataset):
             img, label = self.dataset2[idx - self.len_dataset1]
             domain = 1.0
         return img, float(label), domain
-
-
