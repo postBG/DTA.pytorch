@@ -48,7 +48,6 @@ class RandomTranslateWithReflect:
         return new_image
 
 
-# TODO Make new class without horizontal flip
 class RandomTranslationAndHorizontalFlip(object):
     def __init__(self, max_translation=14, flip_probability=0.5):
         self.random_translation_transform = RandomTranslateWithReflect(max_translation)

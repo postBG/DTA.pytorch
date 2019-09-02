@@ -103,7 +103,6 @@ class DTATrainer(object):
         for key in keys:
             self.optimizers[key].zero_grad()
 
-    # TODO: Refactor this
     def train_one_epoch(self, epoch, dataloader, accum_iter):
         self.feature_extractor.train()
         self.classifier.train()
@@ -145,7 +144,6 @@ class DTATrainer(object):
             target_logits1 = self.classifier(target_features1)
 
             # Target AdD
-            # TODO: refactor this signature
             jacobian_for_cnn_adv_drop, jacobian_for_fc_adv_drop, clean_target_logits = calculate_jacobians(
                 target_features2.detach(), target_logits1.detach(), self.classifier, self.classifier.module.drop_size,
                 self.target_consistency_criterion, self.reset_grad)

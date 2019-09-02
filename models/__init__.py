@@ -9,7 +9,6 @@ def create_class_classifier(args):
 
     class_classifier = create_resnet_upper(args.model, num_classes=num_classes)
 
-    # TODO: Refactor this
     if args.classifier_ckpt_path:
         print("Load class classifier from {}".format(args.classifier_ckpt_path))
         ckpt = torch.load(args.classifier_ckpt_path)
@@ -21,7 +20,6 @@ def create_class_classifier(args):
 def create_feature_extractor(args):
     encoder = create_resnet_lower(args.model)
 
-    # TODO: Refactor this
     if args.encoder_ckpt_path:
         print("Load encoder from {}".format(args.encoder_ckpt_path))
         ckpt = torch.load(args.encoder_ckpt_path)
