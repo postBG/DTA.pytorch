@@ -7,8 +7,7 @@ from augmentations.misc import ToRGB
 from datasets.base import AbstractDataSet
 
 VISDA_DEFAULT_ROOT = '/data/visda2017'
-VISDA_CHANNEL_STATS_source = {'mean': [0.485, 0.456, 0.406], 'std': [0.229, 0.224, 0.225]}
-VISDA_CHANNEL_STATS_target = {'mean': [0.485, 0.456, 0.406], 'std': [0.229, 0.224, 0.225]}
+VISDA_CHANNEL_STATS = {'mean': [0.485, 0.456, 0.406], 'std': [0.229, 0.224, 0.225]}
 
 
 class CustomVisdaSource(ImageFolder, AbstractDataSet):
@@ -26,11 +25,7 @@ class CustomVisdaSource(ImageFolder, AbstractDataSet):
 
     @staticmethod
     def statistics():
-        return VISDA_CHANNEL_STATS_source
-
-    @classmethod
-    def img_size(cls):
-        return 224
+        return VISDA_CHANNEL_STATS
 
 
 class CustomVisdaTarget(ImageFolder, AbstractDataSet):
@@ -48,12 +43,8 @@ class CustomVisdaTarget(ImageFolder, AbstractDataSet):
 
     @staticmethod
     def statistics():
-        return VISDA_CHANNEL_STATS_target
+        return VISDA_CHANNEL_STATS
 
     @classmethod
     def _preprocess_transform(cls):
         return transforms.Compose([ToRGB()])
-
-    @classmethod
-    def img_size(cls):
-        return 224

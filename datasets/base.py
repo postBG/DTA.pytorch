@@ -1,3 +1,4 @@
+import abc
 import random
 
 import torch.utils.data as data
@@ -7,22 +8,20 @@ from augmentations.misc import Identity
 from augmentations.standard import RandomHorizontalFlip
 
 
-# TODO: Refactor this
 class AbstractDataSet(object):
     @staticmethod
+    @abc.abstractmethod
     def num_class():
         raise NotImplementedError
 
     @staticmethod
+    @abc.abstractmethod
     def code():
         raise NotImplementedError
 
     @staticmethod
+    @abc.abstractmethod
     def statistics():
-        raise NotImplementedError
-
-    @classmethod
-    def img_size(cls):
         raise NotImplementedError
 
     @classmethod
