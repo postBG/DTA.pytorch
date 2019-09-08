@@ -15,7 +15,7 @@ def dataset_factory(dataset_code, transform_type, is_train=True, **kwargs):
     transform = cls.train_transform_config(transform_type) if is_train else cls.eval_transform_config(transform_type)
 
     print("{} has been created.".format(cls.code()))
-    return cls(transform=transform, is_train=is_train, **kwargs)
+    return cls(transform=transform, **kwargs)
 
 
 def dataloaders_factory(args):
@@ -30,7 +30,7 @@ def dataloaders_factory(args):
         target_val_dataset = Subset(target_val_dataset,
                                     np.random.randint(0, len(target_val_dataset), args.batch_size * 5))
 
-    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=32, shuffle=True,
+    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=16, shuffle=True,
                                   pin_memory=True)
 
     target_val_dataloader = DataLoader(target_val_dataset,

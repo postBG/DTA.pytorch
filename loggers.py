@@ -41,29 +41,6 @@ class RecentModelCheckpointLogger(AbstractLogger):
         torch.save(kwargs['state_dict'], _checkpoint_file_path(self.export_path, self.ckpt_final_filename))
 
 
-class PerEpochModelCheckpointLogger(AbstractLogger):
-    def __init__(self, export_path, checkpoint_period, ckpt_filename='checkpoint-recent.pth'):
-        self.export_path = export_path
-        if not os.path.exists(self.export_path):
-            os.mkdir(self.export_path)
-        self.checkpoint_period = checkpoint_period
-        self.call_count = 0
-        self.ckpt_filename = ckpt_filename
-        self.ckpt_final_filename = self.ckpt_filename + '.final'
-
-    def log(self, *args, **kwargs):
-        self.call_count += 1
-
-        if self.call_count % self.checkpoint_period == 0:
-            state_dict = kwargs['state_dict']
-            state_dict['epoch'] = kwargs['epoch']
-            state_dict['accum_iter'] = kwargs['accum_iter']
-            torch.save(state_dict, _checkpoint_file_path(self.export_path, self.ckpt_filename + str(self.call_count)))
-
-    def complete(self, *args, **kwargs):
-        torch.save(kwargs['state_dict'], _checkpoint_file_path(self.export_path, self.ckpt_final_filename))
-
-
 class BestModelTracker(AbstractLogger):
     def __init__(self, export_path, metric_key, ckpt_filename='best_acc_model.pth'):
         self.export_path = export_path

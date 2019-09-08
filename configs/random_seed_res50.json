@@ -3,6 +3,7 @@
   "epoch": 20,
   "weight_decay": 0.0005,
   "decay_step": 10,
+  "device_idx": "0,1,2,3",
   "momentum": 0.9,
   "gamma": 0.5,
   "batch_size": 128,
@@ -31,7 +32,7 @@
   "eps": 15,
   "source_vat_loss_weight": 0.0,
   "target_vat_loss_weight": 0.2,
-  "experiment_dir": "random_seed_exp",
-  "experiment_description": "res50_best_randomseed",
+  "experiment_dir": "res50_experiments",
+  "experiment_description": "res50_dta_vat",
   "checkpoint_period": 1
 }

@@ -19,9 +19,6 @@ def create_experiment_export_folder(args):
     experiment_dir, experiment_description = args.experiment_dir, args.experiment_description
     if not os.path.exists(experiment_dir):
         os.mkdir(experiment_dir)
-    experiment_dir = os.path.join(experiment_dir, args.source_dataset_code + '_' + args.target_dataset_code)
-    if not os.path.exists(experiment_dir):
-        os.mkdir(experiment_dir)
     experiment_path = get_name_of_experiment_path(experiment_dir, experiment_description)
     print(os.path.abspath(experiment_path))
     os.mkdir(experiment_path)

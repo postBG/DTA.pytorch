@@ -6,13 +6,13 @@ from torchvision.datasets import ImageFolder
 from augmentations.misc import ToRGB
 from datasets.base import AbstractDataSet
 
-VISDA_DEFAULT_ROOT = '/data/visda2017'
+VISDA_DEFAULT_ROOT = './data'
 VISDA_CHANNEL_STATS = {'mean': [0.485, 0.456, 0.406], 'std': [0.229, 0.224, 0.225]}
 
 
 class CustomVisdaSource(ImageFolder, AbstractDataSet):
-    def __init__(self, root=VISDA_DEFAULT_ROOT, is_train=True, **kwargs):
-        root = os.path.join(root, 'train' if is_train else 'source_validation')
+    def __init__(self, root=VISDA_DEFAULT_ROOT, **kwargs):
+        root = os.path.join(root, 'train')
         super().__init__(root, **kwargs)
 
     @staticmethod
@@ -29,7 +29,7 @@ class CustomVisdaSource(ImageFolder, AbstractDataSet):
 
 
 class CustomVisdaTarget(ImageFolder, AbstractDataSet):
-    def __init__(self, root=VISDA_DEFAULT_ROOT, is_train=True, **kwargs):
+    def __init__(self, root=VISDA_DEFAULT_ROOT, **kwargs):
         root = os.path.join(root, 'validation')
         super().__init__(root, **kwargs)
 

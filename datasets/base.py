@@ -5,7 +5,6 @@ import torch.utils.data as data
 from torchvision import transforms as transforms
 
 from augmentations.misc import Identity
-from augmentations.standard import RandomHorizontalFlip
 
 
 class AbstractDataSet(object):
@@ -29,11 +28,11 @@ class AbstractDataSet(object):
         config = cls._add_additional_transform(
             {
                 'visda_standard_source': transforms.Compose([transforms.RandomResizedCrop(size=224, scale=(0.75, 1.33)),
-                                                             RandomHorizontalFlip(),
+                                                             transforms.RandomHorizontalFlip(),
                                                              transforms.ToTensor(),
                                                              transforms.Normalize(**cls.statistics())]),
                 'visda_standard_target': transforms.Compose([transforms.Resize((224, 224)),
-                                                             RandomHorizontalFlip(),
+                                                             transforms.RandomHorizontalFlip(),
                                                              transforms.ToTensor(),
                                                              transforms.Normalize(**cls.statistics())]),
             })

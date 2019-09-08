@@ -6,28 +6,6 @@ from consistency_losses import KLDivLossWithLogits
 from vat import VirtualAdversarialPerturbationGenerator
 
 
-class GANLoss(nn.Module):
-    def __init__(self, source_label=0.0, target_label=1.0, device='cuda'):
-        super(GANLoss, self).__init__()
-        self.loss = nn.CrossEntropyLoss()
-        self.source_label = source_label
-        self.target_label = target_label
-        self.device = device
-
-    def __call__(self, inputs, to_source):
-        """
-        :param inputs: logit, output from discriminator
-        :param to_source: True if fool as source, False if fool as target
-        :return: GAN Loss
-        """
-        if to_source:
-            target_tensor = torch.LongTensor(inputs.size(0)).fill_(self.source_label).to(self.device)
-        else:
-            target_tensor = torch.LongTensor(inputs.size(0)).fill_(self.target_label).to(self.device)
-
-        return self.loss(inputs, target_tensor)
-
-
 class EntropyLoss(nn.Module):
     def __init__(self, reduction='mean'):
         super().__init__()
