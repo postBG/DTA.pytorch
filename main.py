@@ -56,17 +56,17 @@ def main(args, trainer_cls):
 
 def setup_loggers(args, export_root, writer):
     loggers_for_train_status = [
-        MetricGraphPrinter(writer, key='clean_correct', namespace='loggers_for_train_status'),
-        MetricGraphPrinter(writer, key='loss', namespace='loggers_for_train_status'),
-        MetricGraphPrinter(writer, key='ce_loss', namespace='loggers_for_train_status'),
-        MetricGraphPrinter(writer, key='source_loss', namespace='loggers_for_train_status'),
-        MetricGraphPrinter(writer, key='source_consistency_loss', namespace='loggers_for_train_status'),
-        MetricGraphPrinter(writer, key='target_loss', namespace='loggers_for_train_status'),
-        MetricGraphPrinter(writer, key='target_consistency_loss', namespace='loggers_for_train_status'),
-        MetricGraphPrinter(writer, key='target_entropy_loss', namespace='loggers_for_train_status'),
-        MetricGraphPrinter(writer, key='target_vat_loss', namespace='loggers_for_train_status'),
-        MetricGraphPrinter(writer, key='target_accuracy', namespace='loggers_for_train_status'),
-        MetricGraphPrinter(writer, key='cls_balance_loss', namespace='loggers_for_train_status')
+        MetricGraphPrinter(writer, key='clean_correct', namespace='train_status'),
+        MetricGraphPrinter(writer, key='loss', namespace='train_status'),
+        MetricGraphPrinter(writer, key='ce_loss', namespace='train_status'),
+        MetricGraphPrinter(writer, key='source_loss', namespace='train_status'),
+        MetricGraphPrinter(writer, key='source_consistency_loss', namespace='train_status'),
+        MetricGraphPrinter(writer, key='target_loss', namespace='train_status'),
+        MetricGraphPrinter(writer, key='target_consistency_loss', namespace='train_status'),
+        MetricGraphPrinter(writer, key='target_entropy_loss', namespace='train_status'),
+        MetricGraphPrinter(writer, key='target_vat_loss', namespace='train_status'),
+        MetricGraphPrinter(writer, key='target_accuracy', namespace='train_status'),
+        MetricGraphPrinter(writer, key='cls_balance_loss', namespace='train_status')
     ]
     extra_analysis = [
         MetricGraphPrinter(writer, key='delta', namespace='analysis'),
