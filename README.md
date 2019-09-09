@@ -1,6 +1,8 @@
 # DTA
 
-![Overview of DTA](./figures/dta_figure.png)  
+<p align="center"> 
+<img src="./figures/dta_figure.png">
+</p>
 
 Official implementation of [Drop to Adapt: Learning Discriminative Features for Unsupervised Domain 
 Adaptation](./main.py), to be presented at ICCV 2019.
