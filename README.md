@@ -47,7 +47,7 @@ For example, to run the ResNet-101 model without VAT:
 python main.py --config_path ./configs/resnet101_dta_vat.json --use_vat False
 ```
 
-Tensorboard logs are saved under the path specified in ```./$experiment_dir/$experiment_description```.
+Tensorboard logs are saved under the path specified in ```./args.experiment_dir/args.experiment_description```.
 
 ## License
 
