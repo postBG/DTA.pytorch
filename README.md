@@ -62,9 +62,7 @@ under the same license if you alter, transform, or create the work.
 This work was done as part of an internship program 
 at Naver Labs, Autonomous Driving Group.
 
-<p align="center"> 
-<img src="./figures/NAVER LABS LOGO_BLACK.png">
-</p>
+![labs_logo](./figures/NAVER%20LABS%20LOGO_BLACK.png)
 
 ## Citation
 
