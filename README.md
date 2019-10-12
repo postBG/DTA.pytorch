@@ -49,6 +49,22 @@ python main.py --config_path ./configs/resnet101_dta_vat.json --use_vat False
 
 Tensorboard logs are saved under the path specified in ```./$experiment_dir/$experiment_description```.
 
-## License
+## Copyright
+
+All codes on this page are copyrighted by Naver Labs 
+and published under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 License](https://creativecommons.org/licenses/by-nc-sa/4.0/). 
+You must attribute the work in the manner specified by the author. 
+You may not use the work for commercial purposes, and you may only distribute the resulting work 
+under the same license if you alter, transform, or create the work.
+
+## Acknowledgement  
+
+This work was done as part of an internship program 
+at Naver Labs, Autonomous Driving Group.
+
+<p align="center"> 
+<img src="./figures/NAVER LABS LOGO_BLACK.png">
+</p>
 
 ## Citation
+
