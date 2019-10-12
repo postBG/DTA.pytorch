@@ -58,11 +58,11 @@ You may not use the work for commercial purposes, and you may only distribute th
 under the same license if you alter, transform, or create the work.
 
 ## Acknowledgement  
+<div>
+This work was done as part of an internship program at Naver Labs, Autonomous Driving Group.
+<img src='./figures/NAVER%20LABS%20LOGO_BLACK.png' width='150'  align='right'/>
+</div>
 
-This work was done as part of an internship program 
-at Naver Labs, Autonomous Driving Group.
-
-![labs_logo](./figures/NAVER%20LABS%20LOGO_BLACK.png)
 
 ## Citation
 
