@@ -119,7 +119,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-
+.DS_store
 # Spyder project settings
 .spyderproject
 .spyproject
