@@ -5,7 +5,7 @@
 </p>
 
 Official implementation of [Drop to Adapt: Learning Discriminative Features for Unsupervised Domain 
-Adaptation](./main.py), to be presented at ICCV 2019.
+Adaptation](https://arxiv.org/abs/1910.05562), to be presented at ICCV 2019.
 
 ## Setup
 
