@@ -59,7 +59,7 @@ under the same license if you alter, transform, or create the work.
 
 ## Acknowledgement  
 <div>
-This work was done as part of an internship program at <a href='https://www.naverlabs.com/en/'>Naver Labs</a>, Autonomous Driving Group.<br>
+This work was done as part of an internship program at <a href='https://www.naverlabs.com/en/'>Naver Labs</a>, Autonomous Driving Group.<br><br>
 <img src='./figures/NL_LOGO.png' width='225'  align='left'/><br><br>
 </div>
 
