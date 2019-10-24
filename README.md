@@ -66,13 +66,12 @@ This work was done as part of an internship program at <a href='https://www.nave
 
 ## Citation
 ```
-@misc{lee2019drop,
-    title={Drop to Adapt: Learning Discriminative Features for Unsupervised Domain Adaptation},
-    author={Seungmin Lee and Dongwan Kim and Namil Kim and Seong-Gyun Jeong},
-    year={2019},
-    eprint={1910.05562},
-    archivePrefix={arXiv},
-    primaryClass={cs.CV}
+@InProceedings{Lee_2019_ICCV,
+    author = {Lee, Seungmin and Kim, Dongwan and Kim, Namil and Jeong, Seong-Gyun},
+    title = {Drop to Adapt: Learning Discriminative Features for Unsupervised Domain Adaptation},
+    booktitle = {The IEEE International Conference on Computer Vision (ICCV)},
+    month = {October},
+    year = {2019}
 }
 ```
 
