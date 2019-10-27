@@ -134,7 +134,7 @@ class DTATrainer(object):
                                                                                                   clean_vat_logits)
                 target_vat_loss.backward()
                 feature_extractor_grads = self.feature_extractor.module.stash_grad(feature_extractor_grads)
-                classifier_grads = self.classifier.module.stash_grad(feature_extractor_grads)
+                classifier_grads = self.classifier.module.stash_grad(classifier_gradsg)
             else:
                 target_vat_loss = torch.tensor(0).to(self.device)
 
