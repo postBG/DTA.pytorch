@@ -40,24 +40,24 @@ def create_resnet_upper(model_name='resnet50', pretrained=True, num_classes=12):
 def resnet50(pretrained=True, is_lower=True, num_classes=12, **kwargs):
     model = ResNetLower(Bottleneck, [3, 4, 6, 2], **kwargs) if is_lower else ResNetUpper(num_classes=num_classes)
     if pretrained:
-        model.load_state_dict(resnet.load_state_dict_from_url(model_urls['resnet50']))
-        print("loaded pretrained resnet50")
+        model.load_imagenet_state_dict(resnet.load_state_dict_from_url(model_urls['resnet50']))
+        print("loaded imagenet pretrained resnet50")
     return model
 
 
 def resnet101(pretrained=True, is_lower=True, num_classes=12, **kwargs):
     model = ResNetLower(Bottleneck, [3, 4, 23, 2], **kwargs) if is_lower else ResNetUpper(num_classes=num_classes)
     if pretrained:
-        model.load_state_dict(resnet.load_state_dict_from_url(model_urls['resnet101']))
-        print("loaded pretrained resnet101")
+        model.load_imagenet_state_dict(resnet.load_state_dict_from_url(model_urls['resnet101']))
+        print("loaded imagenet pretrained resnet101")
     return model
 
 
 def resnet152(pretrained=True, is_lower=True, num_classes=12, **kwargs):
     model = ResNetLower(Bottleneck, [3, 8, 36, 2], **kwargs) if is_lower else ResNetUpper(num_classes=num_classes)
     if pretrained:
-        model.load_state_dict(resnet.load_state_dict_from_url(model_urls['resnet152']))
-        print("loaded pretrained resnet152")
+        model.load_imagenet_state_dict(resnet.load_state_dict_from_url(model_urls['resnet152']))
+        print("loaded imagenet pretrained resnet152")
     return model
 
 
@@ -126,7 +126,7 @@ class ResNetLower(AbstractModel):
 
         return h1, h2
 
-    def load_state_dict(self, state_dict, strict=True):
+    def load_imagenet_state_dict(self, state_dict, strict=True):
         current_state_dict = self.state_dict()
         state_dict = {k: v for k, v in state_dict.items() if not (k.startswith('layer4.2') or k.startswith('fc.'))}
         current_state_dict.update(state_dict)
@@ -151,7 +151,7 @@ class ResNetUpper(AbstractModel):
     def _make_single_layer(self, block, planes):
         return block(self.inplanes, planes)
 
-    def load_state_dict(self, state_dict, strict=True):
+    def load_imagenet_state_dict(self, state_dict, strict=True):
         current_state_dict = self.state_dict()
         state_dict = {k.replace('layer4.2', 'layer4_last_conv'): v for k, v in state_dict.items()
                       if k.startswith('layer4.2')}
