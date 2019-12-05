@@ -23,6 +23,6 @@ def create_feature_extractor(args):
     if args.encoder_ckpt_path:
         print("Load encoder from {}".format(args.encoder_ckpt_path))
         ckpt = torch.load(args.encoder_ckpt_path)
-        encoder.load_state_dict(ckpt['encoder_state_dict'])
+        encoder.load_state_dict(ckpt['feature_extractor_state_dict'])
         return encoder
     return encoder
